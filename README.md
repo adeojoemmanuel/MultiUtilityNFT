@@ -1,88 +1,114 @@
-## Foundry
+# Multi-Utility NFT Contract
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A smart contract implementing phased NFT minting with Merkle proofs, discounted signatures, and Sablier vesting.
 
-Foundry consists of:
+## Contract Design
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+### Core Components
+1. **Phased Minting**
+   - **Phase 1**: Whitelisted users mint for free using Merkle proofs
+   - **Phase 2**: Approved users mint at discount with owner-signed signatures
+   - **Phase 3**: Public minting at full price
 
-## Documentation
+2. **Token Integration**
+   - Uses ERC20 (`PaymentToken`) for payments
+   - Implements ERC721 for NFTs
 
-https://book.getfoundry.sh/
+3. **Vesting**
+   - Locks minting fees in Sablier's linear vesting schedule
+   - 1-year vesting period (configurable)
 
-## Usage
+4. **Security**
+   - Reentrancy protection
+   - Signature non-reuse system
+   - Input validation for Merkle proofs
 
-### Build
+## Key Features
 
-```shell
-$ forge build
-```
+- 🛡️ **Merkle Proof Verification**  
+  Uses OpenZeppelin's Merkle proofs for phase-based access control
 
-### Test
+- 🔑 **ECDSA Signatures**  
+  Phase 2 requires valid owner-signed discount approvals
 
-```shell
-$ forge test
-```
+- 💰 **Sablier Integration**  
+  Automatically creates vesting streams for collected fees
 
-# Run all tests
+- 🚫 **Anti-Abuse Protections**
+  - Signature expiration tracking
+  - Phase transition locking
+  - ERC20 allowance checks
 
-```shell
-$ forge test -vvv
-```
+## Testing Approach
 
-### Format
+### Test Coverage Goals
+1. **Phased Minting Validation**
+   - Valid/invalid Merkle proofs
+   - Phase transition checks
+   - Payment amount verification
 
-```shell
-$ forge fmt
-```
+2. **Edge Cases**
+   - Signature reuse attempts
+   - Invalid phase access
+   - Insufficient token allowances
 
-### Gas Snapshots
+3. **Vesting Flow**
+   - Owner-only vesting trigger
+   - Sablier stream creation
+   - Post-vesting fund locking
 
-```shell
-$ forge snapshot
-```
+### Branching Tree Technique (BTT)
+- Tests 3 main execution paths:
+  1. Phase 1 → Phase 2 → Phase 3
+  2. Direct Phase 3 access
+  3. Invalid phase transitions
 
-### Anvil
+- Validates 12+ edge case scenarios
 
-```shell
-$ anvil
-```
+### Security Tests
+- Reentrancy attacks
+- Signature malleability
+- Merkle proof spoofing
+- Access control violations
 
-### Deploy
+## Getting Started
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+### Prerequisites
+- Foundry (v0.8.0+)
+- Node.js (for coverage reporting)
 
-### Cast
+```bash
+# Install dependencies
+forge install OpenZeppelin/openzeppelin-contracts
 
-```shell
-$ cast <subcommand>
-```
+# Run tests
+forge test -vvv
 
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
-
-
-
-
-# Run coverage analysis
-```shell
-$ forge coverage --report lcov
-```
+# Generate coverage report
+forge coverage --report lcov
 
 
-# Generate HTML report (requires lcov)
-```shell
-lcov --list lcov.info
-genhtml lcov.info -o coverage-report
+// results with example testcase
 
-```
+mintPhase1(validProof)
+// Output: 
+- NFT minted (ownerOf(0) == user1)
+- No tokens transferred (balance remains 0)
+
+2. **Phase 2 Test** ✅
+```solidity
+// Input 
+mintWithDiscount(validSig, validProof)
+// Output:
+- NFT minted (ownerOf(0) == user2)
+- Discount price transferred (0.8 ETH)
+- Signature marked as used
+
+3. **Edge Cases** ✅
+- Invalid Merkle proofs revert with "Invalid proof"
+- Invalid signatures revert with "Invalid signature"
+- Reused signatures revert with "Signature reused"
+
+### Coverage Validation
+```bash
+forge test --match-contract MultiUtilityNFTTest --gas-report
