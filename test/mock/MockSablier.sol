@@ -16,7 +16,7 @@ contract MockSablier is ISablier {
     uint256 public nextStreamId;
     mapping(uint256 => Stream) public streams;
 
-    function createWithDurations(CreateWithDurations calldata params) external returns (uint256 streamId) {
+    function createWithDurations(CreateWithDurations calldata params) external override returns (uint256 streamId) {
         streamId = nextStreamId++;
         streams[streamId] = Stream({
             sender: params.sender,
@@ -26,6 +26,5 @@ contract MockSablier is ISablier {
             startTime: uint40(block.timestamp),
             duration: params.totalDuration
         });
-        return streamId;
     }
 }

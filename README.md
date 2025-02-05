@@ -27,6 +27,12 @@ $ forge build
 $ forge test
 ```
 
+# Run all tests
+
+```shell
+$ forge test -vvv
+```
+
 ### Format
 
 ```shell
@@ -63,4 +69,20 @@ $ cast <subcommand>
 $ forge --help
 $ anvil --help
 $ cast --help
+```
+
+
+
+
+# Run coverage analysis
+```shell
+$ forge coverage --report lcov
+```
+
+
+# Generate HTML report (requires lcov)
+```shell
+lcov --list lcov.info
+genhtml lcov.info -o coverage-report
+
 ```
