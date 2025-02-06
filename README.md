@@ -79,7 +79,7 @@ A smart contract implementing phased NFT minting with Merkle proofs, discounted 
 ![Unit Test Snapshot](compilation-test.png)
 
 ## Compilation and Test Screenshot
-[Coverage Report](./lcov.info)
+[Test Coverage Report](./lcov.info)
 
 
 ### Security Tests
@@ -94,6 +94,8 @@ A smart contract implementing phased NFT minting with Merkle proofs, discounted 
 ### Prerequisites
 
 - Foundry (v0.8.0+)
+- Forge (0.3.0)
+- solc (0.8.0)
 - Node.js (for coverage reporting)
 
 ```bash
