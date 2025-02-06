@@ -6,7 +6,13 @@ import "../src/MultiUtilityNFT.sol";
 import "../src/PaymentToken.sol";
 
 contract MockSablier {
-    function createStream(address recipient, uint256 depositAmount, address tokenAddress, uint256 startTime, uint256 stopTime) external {
+    function createStream(
+        address recipient,
+        uint256 depositAmount,
+        address tokenAddress,
+        uint256 startTime,
+        uint256 stopTime
+    ) external {
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), depositAmount);
     }
 }
@@ -28,18 +34,9 @@ contract MultiUtilityNFTTest is Test {
         vm.startPrank(owner);
         paymentToken = new PaymentToken();
         sablier = new MockSablier();
-        nft = new MultiUtilityNFT(
-            "TestNFT",
-            "TNFT",
-            address(paymentToken),
-            address(sablier),
-            1 ether,
-            0.5 ether
-        );
+        nft = new MultiUtilityNFT("TestNFT", "TNFT", address(paymentToken), address(sablier), 1 ether, 0.5 ether);
         vm.stopPrank();
     }
-
-
 
     function test_Phase1Mint() public {
         bytes32 leafOwner = keccak256(abi.encodePacked(owner));
@@ -47,7 +44,7 @@ contract MultiUtilityNFTTest is Test {
 
         bytes32 root = keccak256(abi.encodePacked(leafOwner, leafUser1));
 
-        // Impersonate owner 
+        // Impersonate owner
         vm.startPrank(owner);
         nft.setMerkleRoots(root, bytes32(0));
         nft.setPhase(MultiUtilityNFT.MintPhase.Phase1);
@@ -63,9 +60,7 @@ contract MultiUtilityNFTTest is Test {
         assertEq(nft.ownerOf(1), user1);
     }
 
-
-
-   function test_Phase2Mint() public {
+    function test_Phase2Mint() public {
         bytes32 leafUser1 = keccak256(abi.encodePacked(user1));
         bytes32 root = leafUser1;
 
@@ -75,7 +70,6 @@ contract MultiUtilityNFTTest is Test {
         nft.setPhase(MultiUtilityNFT.MintPhase.Phase2);
         vm.stopPrank();
 
-    
         vm.startPrank(owner);
         // Transfer 0.5 ether (500000000000000000 wei) to user1.
         paymentToken.transfer(user1, 0.5 ether);
@@ -118,7 +112,6 @@ contract MultiUtilityNFTTest is Test {
         assertEq(nft.ownerOf(1), user2);
         assertEq(paymentToken.balanceOf(address(nft)), 1 ether);
     }
-
 
     function getRoot(bytes32[] memory leaves) internal pure returns (bytes32) {
         return MerkleProof.processProof(leaves, 0);
