@@ -43,9 +43,10 @@ A smart contract implementing phased NFT minting with Merkle proofs, discounted 
 
 ### Security Considerations
 
-- Ensures the contract is in the correct phase (`Phase3`) before allowing minting.
 - Verifies that the caller has sufficient `PaymentToken` balance and has approved the contract to spend the required amount.
 - Utilizes OpenZeppelin's `ReentrancyGuard` to prevent reentrancy attacks during the token transfer and minting process.
+- Ensures the contract is in the correct phase (`Phase3`) before allowing minting.
+
 
 ## Testing Approach
 
@@ -76,7 +77,8 @@ A smart contract implementing phased NFT minting with Merkle proofs, discounted 
 ### Compilation and Test Screenshot
 
 ![Unit Test Snapshot](compilation-test.png)
-![Coverage Report](lcov.info)
+![Coverage Report](./lcov.info)
+
 
 ### Security Tests
 
