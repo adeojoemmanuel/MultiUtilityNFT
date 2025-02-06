@@ -77,7 +77,9 @@ A smart contract implementing phased NFT minting with Merkle proofs, discounted 
 ### Compilation and Test Screenshot
 
 ![Unit Test Snapshot](compilation-test.png)
-![Coverage Report](./lcov.info)
+
+## Compilation and Test Screenshot
+[Coverage Report](./lcov.info)
 
 
 ### Security Tests
