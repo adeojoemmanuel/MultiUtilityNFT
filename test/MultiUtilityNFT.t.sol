@@ -99,6 +99,26 @@ contract MultiUtilityNFTTest is Test {
         assertEq(nft.ownerOf(1), user1);
     }
 
+    function test_Phase3Mint() public {
+        vm.startPrank(owner);
+        nft.setPhase(MultiUtilityNFT.MintPhase.Phase3);
+        vm.stopPrank();
+
+        // transfer  1 ether to user2
+        vm.startPrank(owner);
+        paymentToken.transfer(user2, 1 ether);
+        vm.stopPrank();
+
+        // user2 approves the NFT contract to spend 1 ether worth of tokens.
+        vm.startPrank(user2);
+        paymentToken.approve(address(nft), 1 ether);
+        nft.mintPhase3();
+        vm.stopPrank();
+
+        assertEq(nft.ownerOf(1), user2);
+        assertEq(paymentToken.balanceOf(address(nft)), 1 ether);
+    }
+
 
     function getRoot(bytes32[] memory leaves) internal pure returns (bytes32) {
         return MerkleProof.processProof(leaves, 0);
