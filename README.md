@@ -58,12 +58,13 @@ A smart contract implementing phased NFT minting with Merkle proofs, discounted 
    - Post-vesting fund locking
 
 ### Branching Tree Technique (BTT)
-- Tests 3 main execution paths:
-  1. Phase 1 → Phase 2 → Phase 3
+- Tests 2 main execution paths:
+  1. Phase 1 → Phase 2
   2. Direct Phase 3 access
   3. Invalid phase transitions
 
-- Validates 12+ edge case scenarios
+### Compilation and Test Screenshot
+![Unit Test Snapshot](compilation-test.png)
 
 ### Security Tests
 - Reentrancy attacks

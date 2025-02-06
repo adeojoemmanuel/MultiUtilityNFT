@@ -41,7 +41,7 @@
             address _sablier,
             uint256 _fullPrice,
             uint256 _discountedPrice
-        ) ERC721(name, symbol) Ownable(msg.sender) {  // <-- Fix: Pass msg.sender to Ownable
+        ) ERC721(name, symbol) Ownable(msg.sender) {
             paymentToken = IERC20(_paymentToken);
             sablier = ISablier(_sablier);
             fullPrice = _fullPrice;
@@ -71,7 +71,9 @@
             
             bytes32 messageHash = keccak256(abi.encodePacked(msg.sender));
             bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash); // <-- Fix: Use ECDSA library
-            address signer = ethSignedMessageHash.recover(signature);
+            // address signer = ethSignedMessageHash.recover(signature);
+            address signer = messageHash.recover(signature);
+
             require(signer == owner(), "Invalid signature");
             require(!usedSignatures[messageHash], "Signature reused");
             usedSignatures[messageHash] = true;

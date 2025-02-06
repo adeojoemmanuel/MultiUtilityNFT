@@ -16,11 +16,15 @@ contract MultiUtilityNFTTest is Test {
     PaymentToken paymentToken;
     MockSablier sablier;
 
-    address owner = address(1);
-    address user1 = address(2);
-    address user2 = address(3);
+    address owner;
+    address user1;
+    address user2;
 
     function setUp() public {
+        owner = vm.addr(1);
+        user1 = vm.addr(2);
+        user2 = vm.addr(3);
+
         vm.startPrank(owner);
         paymentToken = new PaymentToken();
         sablier = new MockSablier();
@@ -35,42 +39,66 @@ contract MultiUtilityNFTTest is Test {
         vm.stopPrank();
     }
 
+
+
     function test_Phase1Mint() public {
-        // Setup Merkle Tree
-        bytes32[] memory leaves = new bytes32[](2);
-        leaves[0] = keccak256(abi.encodePacked(owner));
-        leaves[1] = keccak256(abi.encodePacked(user1));
-        bytes32 root = getRoot(leaves);
+        bytes32 leafOwner = keccak256(abi.encodePacked(owner));
+        bytes32 leafUser1 = keccak256(abi.encodePacked(user1));
+
+        bytes32 root = keccak256(abi.encodePacked(leafOwner, leafUser1));
+
+        // Impersonate owner 
+        vm.startPrank(owner);
         nft.setMerkleRoots(root, bytes32(0));
         nft.setPhase(MultiUtilityNFT.MintPhase.Phase1);
+        vm.stopPrank();
 
-        // Generate Merkle Proof
-        bytes32[] memory proof = getProof(leaves, 1);
+        // The proof that user1 is the sibling leaf
+        bytes32[] memory proof = new bytes32[](1);
+        proof[0] = leafOwner;
 
+        // user1 mints
         vm.prank(user1);
         nft.mintPhase1(proof);
         assertEq(nft.ownerOf(1), user1);
     }
 
-    function test_Phase2Mint() public {
-        // Setup Merkle Tree and Phase
-        bytes32[] memory leaves = new bytes32[](1);
-        leaves[0] = keccak256(abi.encodePacked(user1));
-        bytes32 root = getRoot(leaves);
+
+
+   function test_Phase2Mint() public {
+        bytes32 leafUser1 = keccak256(abi.encodePacked(user1));
+        bytes32 root = leafUser1;
+
+        // Impersonate owner
+        vm.startPrank(owner);
         nft.setMerkleRoots(bytes32(0), root);
         nft.setPhase(MultiUtilityNFT.MintPhase.Phase2);
+        vm.stopPrank();
 
-        // Generate Signature
+    
+        vm.startPrank(owner);
+        // Transfer 0.5 ether (500000000000000000 wei) to user1.
+        paymentToken.transfer(user1, 0.5 ether);
+        vm.stopPrank();
+
+        // Compute the message hash expected by the contract.
         bytes32 messageHash = keccak256(abi.encodePacked(user1));
+        // Sign the message with the private key 1
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(1, messageHash);
         bytes memory signature = abi.encodePacked(r, s, v);
 
-        // Mint
+        //  Merkle proof is empty.
+        bytes32[] memory proof = new bytes32[](0);
+
+        // user1 approves the NFT contract to spend 0.5 ether worth of tokens.
         vm.startPrank(user1);
         paymentToken.approve(address(nft), 0.5 ether);
-        nft.mintPhase2(getProof(leaves, 0), signature);
+        nft.mintPhase2(proof, signature);
+        vm.stopPrank();
+
         assertEq(nft.ownerOf(1), user1);
     }
+
 
     function getRoot(bytes32[] memory leaves) internal pure returns (bytes32) {
         return MerkleProof.processProof(leaves, 0);
